@@ -1,0 +1,7 @@
+name: UpgradeableSword
+main: gg.solarmc.upgradeablesword.UpgradeableSword
+version: ${project.version}
+authors: [ zone_infinity ]
+commands:
+  usword:
+    usage: /<command>

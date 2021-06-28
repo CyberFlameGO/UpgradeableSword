@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>gg.solarmc</groupId>
+    <artifactId>UpgradeableSword</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+        <solarapi.version>1.1.7</solarapi.version>
+    </properties>
+
+    <dependencies>
+        <!-- https://github.com/SolarMC-Dev/SolarPaper-API/blob/master/pom.xml -->
+        <dependency>
+            <groupId>gg.solarmc</groupId>
+            <artifactId>solarpaper-api</artifactId>
+            <version>${solarapi.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>space.arim.dazzleconf</groupId>
+            <artifactId>dazzleconf-ext-snakeyaml</artifactId>
+            <version>1.2.0-M2</version>
+        </dependency>
+
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>solar-releases</id>
+            <url>https://mvn-repo.solarmc.gg/releases</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>
