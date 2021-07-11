@@ -4,4 +4,5 @@ version: ${project.version}
 authors: [ zone_infinity ]
 commands:
   usword:
+    description: "The only command of USword Plugin"
     usage: /<command>

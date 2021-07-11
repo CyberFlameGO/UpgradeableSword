@@ -1,0 +1,36 @@
+enabled: true
+
+# Rate of getting XP
+# 2 xprate means 2 xp per 1 hit
+# -2 xprate means 1 xp per 2 hit
+xprate: 1
+
+# The Display Name of the Upgradeable Sword
+swordname: "&l&4Monster of Death"
+
+# Levels of Enchantment
+# Each index of these Integers represents the xp for a level of The Enchantment
+# eg. 100 xp is needed for sharpness level 1 in this default config and so on
+#     5000 xp is needed for fire aspect level 2"
+
+# Levels for Sharpness enchantment
+sharpness:
+  - 0
+  - 100
+  - 500
+  - 1000
+  - 3000
+  - 8000
+
+# Levels for Fire Aspect enchantment
+fireaspect:
+  - 0
+  - 2000
+  - 5000
+
+# Levels for Life-Steal enchantment
+lifesteal:
+  - 0
+  - 4000
+  - 7000
+  - 10000

@@ -6,6 +6,7 @@ import gg.solarmc.upgradeablesword.config.Config;
 import gg.solarmc.upgradeablesword.config.LevelConfig;
 import gg.solarmc.upgradeablesword.enchantments.PluginEnchants;
 import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -23,8 +24,10 @@ import java.util.UUID;
 public class PluginEvent implements Listener, UpgradeableSwordEvent {
     private final Map<UUID, PlayerData> playerData;
     private final UpgradeableSword plugin;
+    private final NamespacedKey xpKey;
 
     public PluginEvent(UpgradeableSword plugin) {
+        xpKey = new NamespacedKey(plugin, "solar_xp");
         this.plugin = plugin;
         playerData = new HashMap<>();
     }
@@ -37,28 +40,12 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
             ItemMeta meta = itemInMainHand.getItemMeta();
             Config config = plugin.getPluginConfig();
 
-            if (!(ChatColor.stripColor(meta.getDisplayName())).equals(config.swordName().replaceAll("&\\w", ""))) return;
+            if (!(ChatColor.stripColor(meta.getDisplayName())).equals(config.swordName().replaceAll("&\\w", "")))
+                return;
 
             addSwordXP(itemInMainHand);
             onLifeStealUsed(damager, damagedPlayer, itemInMainHand.getEnchantmentLevel(PluginEnchants.LIFE_STEAL));
         }
-    }
-
-    /**
-     * @param item the diamond sword.
-     * @return the xp of the sword
-     */
-    private double getSwordXP(ItemStack item) {
-        // TODO : Implement Persistent Data Container
-        return 0;
-    }
-
-    private void addSwordXP(ItemStack item) {
-        double xp = plugin.getPluginConfig().xpRate();
-        if (xp < 0) xp = 1.0 / xp;
-
-        // TODO : Add xp Persistent Data in item
-        onSwordXpIncrease(item);
     }
 
     @Override
@@ -69,15 +56,6 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
         checkAndAddEnchantment(item, Enchantment.DAMAGE_ALL, xp, config.sharpness());
         checkAndAddEnchantment(item, Enchantment.FIRE_ASPECT, xp, config.fireAspect());
         checkAndAddEnchantment(item, PluginEnchants.LIFE_STEAL, xp, config.lifeSteal());
-    }
-
-    private void checkAndAddEnchantment(ItemStack item, Enchantment enchantment, int xp, List<Integer> levels) {
-        if (levels.contains(xp)) {
-            int amplifier = levels.indexOf(xp);
-            item.addEnchantment(enchantment, amplifier);
-
-            if (enchantment == PluginEnchants.LIFE_STEAL) onLifeStealEnchantmentAdd(item, amplifier);
-        }
     }
 
     @Override
@@ -115,5 +93,53 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
             double playerDamagedHealth = Math.max(0, playerDamaged.getHealth() - lifeStealAmplifier);
             playerDamaged.setHealth(playerDamagedHealth);
         }
+    }
+
+    private void checkAndAddEnchantment(ItemStack item, Enchantment enchantment, int xp, List<Integer> levels) {
+        if (levels.contains(xp)) {
+            int amplifier = levels.indexOf(xp);
+            item.addEnchantment(enchantment, amplifier);
+
+            if (enchantment == PluginEnchants.LIFE_STEAL) onLifeStealEnchantmentAdd(item, amplifier);
+        }
+    }
+
+    /**
+     * @param item the diamond sword.
+     * @return the xp of the sword
+     */
+    private double getSwordXP(ItemStack item) {
+        /*
+        PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
+
+        if (!dataContainer.has(xpKey, PersistentDataType.DOUBLE)) {
+            dataContainer.set(xpKey, PersistentDataType.DOUBLE, 0);
+            return 0;
+        }
+
+        return dataContainer.get(xpKey, PersistentDataType.DOUBLE);
+        */
+
+        List<String> lore = item.getLore();
+        if (!lore.get(0).startsWith("xp")) {
+            lore.add(0, "xp: 0.0");
+            item.setLore(lore);
+            return 0;
+        }
+
+        return Double.parseDouble(lore.get(0).split(":")[1].trim());
+    }
+
+    private void addSwordXP(ItemStack item) {
+        double xp = plugin.getPluginConfig().xpRate();
+        if (xp < 0) xp = 1.0 / xp;
+
+        // item.getPersistentDataContainer().set(new NamespacedKey(plugin, "solar_xp"), PersistentDataType.DOUBLE, getSwordXP(item) + xp);
+        List<String> lore = item.getLore();
+
+        lore.set(0, "xp: " + getSwordXP(item) + xp);
+        item.setLore(lore);
+
+        onSwordXpIncrease(item);
     }
 }
