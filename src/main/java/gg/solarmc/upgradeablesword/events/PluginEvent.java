@@ -88,20 +88,22 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
         UUID playerDamagedId = playerDamaged.getUniqueId();
         PlayerData damagerData = this.playerData.computeIfAbsent(damagerId, it -> new PlayerData(0, new UUID(0, 0), 0));
 
-        if (playerDamagedId.equals(damagerData.lastDamagedPlayer())) {
-            playerData.put(damagerId, damagerData.withHits(damagerData.hits() + 1).withLastDamagedPlayerHits(damagerData.lastDamagedPlayerHits() + 1));
-        } else {
+        final int lastDamagedPlayerHits = damagerData.lastDamagedPlayerHits();
+
+        if (playerDamagedId.equals(damagerData.lastDamagedPlayer()))
+            playerData.put(damagerId, damagerData.withHits(damagerData.hits() + 1).withLastDamagedPlayerHits(lastDamagedPlayerHits + 1));
+        else {
             playerData.put(damagerId, damagerData.withHits(0).withLastDamagedPlayer(playerDamagedId).withLastDamagedPlayerHits(1));
             return;
         }
 
-        if (damagerData.lastDamagedPlayerHits() / 10 > plugin.getPluginConfig().maxHitsAlert() / 10) {
+        if (lastDamagedPlayerHits >= plugin.getPluginConfig().maxHitsAlert() && lastDamagedPlayerHits % 10 == 0) {
             damager.getServer().getOnlinePlayers()
                     .stream().filter(it -> it.hasPermission("usword.notifyBoosting"))
                     .forEach(it -> it.sendMessage(String.format(
                             ChatColor.BOLD + "" + ChatColor.GOLD + "!!! %s could be boosting (Hits to same Player : %s) !!!",
                             damager.getName(),
-                            damagerData.lastDamagedPlayerHits()
+                            lastDamagedPlayerHits
                     )));
         }
 
