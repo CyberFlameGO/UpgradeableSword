@@ -3,9 +3,12 @@ package gg.solarmc.upgradeablesword.config;
 import space.arim.dazzleconf.annote.ConfComments;
 import space.arim.dazzleconf.annote.ConfDefault;
 import space.arim.dazzleconf.annote.ConfKey;
+import space.arim.dazzleconf.annote.SubSection;
+
+import java.util.List;
 
 public interface Config {
-    static LevelConfig setDefaultLevelConfig(LevelConfig defaultGiftsSection) {
+    static @SubSection LevelConfig setDefaultLevelConfig(LevelConfig defaultGiftsSection) {
         return defaultGiftsSection;
     }
 
@@ -23,6 +26,41 @@ public interface Config {
     @ConfComments("The Display Name of the Upgradeable Sword")
     String swordName();
 
+    @ConfKey("swordLore")
+    @ConfDefault.DefaultStrings({
+            "{playerName}'s Upgradeable Sword",
+            "Exp : {xp}"
+    })
+    @ConfComments({
+            "Lore of the USword",
+            "Variables :",
+            "xp - XP of the sword",
+            "playerName - name of the player who got the Sword",
+            "Tell me if you want more"
+    })
+    List<String> swordLore();
+
+    @ConfKey("swordGaveMessage")
+    @ConfDefault.DefaultString("Check your inventory for the Upgradeable Sword!!!")
+    @ConfComments({"Message sent after Using the usword command", "Gimme a better name ;-;"})
+    String swordGaveMessage();
+
+    @ConfKey("maxHitsAlert")
+    @ConfDefault.DefaultInteger(30)
+    @ConfComments({"The number of hits after which it should Alert staff", "Better name..."})
+    int maxHitsAlert();
+
+    @ConfKey("levelUpMessage")
+    @ConfDefault.DefaultString("Your sword leveled up!! {enchantment} {level} Added.")
+    @ConfComments({
+            "Message after Level up (Enchantment Added)",
+            "Variables :",
+            "enchantment - The Enchantment added",
+            "level - The Enchantment Level",
+            "Tell me if you want more"
+    })
+    String levelUpMessage();
+
     @ConfKey("levels")
     @ConfDefault.DefaultObject("setDefaultLevelConfig")
     @ConfComments({
@@ -31,5 +69,5 @@ public interface Config {
             "eg. 100 xp is needed for sharpness level 1 in this default config and so on",
             "    5000 xp is needed for fire aspect level 2"
     })
-    LevelConfig getLevelConfig();
+    @SubSection LevelConfig getLevelConfig();
 }

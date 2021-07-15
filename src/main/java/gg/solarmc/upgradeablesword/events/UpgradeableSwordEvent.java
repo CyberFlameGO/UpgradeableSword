@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 
 public interface UpgradeableSwordEvent {
 
-    void onSwordXpIncrease(ItemStack item);
+    void onSwordXpIncrease(Player player, ItemStack item);
 
     void onLifeStealEnchantmentAdd(ItemStack sword, int amplifier);
 

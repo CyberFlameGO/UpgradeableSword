@@ -1,11 +1,10 @@
 package gg.solarmc.upgradeablesword.commands;
 
+import gg.solarmc.upgradeablesword.PluginHelper;
 import gg.solarmc.upgradeablesword.UpgradeableSword;
 import gg.solarmc.upgradeablesword.config.Config;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,66 +15,55 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class USwordCommand implements CommandExecutor {
 
     private final UpgradeableSword plugin;
+    private final PluginHelper helper;
 
-    public USwordCommand(UpgradeableSword plugin) {
+    public USwordCommand(UpgradeableSword plugin, PluginHelper helper) {
         this.plugin = plugin;
+        this.helper = helper;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Config config = plugin.getPluginConfig();
+
         if (args.length == 0) {
-            sender.sendMessage("Sub Commands : reload | sword");
+            if (sender instanceof Player player) {
+                if (!sender.hasPermission("usword.command"))
+                    sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+                else {
+                    if (player.getInventory().firstEmpty() == -1) {
+                        player.sendMessage(ChatColor.RED + "Your Inventory is Full!!");
+                        return true;
+                    }
+                    ItemStack sword = getUpgradeableSword(player.getDisplayName());
+
+                    player.getInventory().addItem(sword);
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', config.swordGaveMessage()));
+                }
+            } else sender.sendMessage("Only Players can use this command.");
             return true;
         }
 
-        final Config config = plugin.getPluginConfig();
-
-        switch (args[0]) {
-            // usword reload
-            case "reload": {
-                if (!sender.hasPermission("usword.reload"))
-                    sender.sendMessage(ChatColor.RED + "You don't have permission to reload this plugin");
-                else
-                    plugin.reloadConfig();
-            }
-
-            // Gives u a example Sword
-            // usword sword
-            case "sword": {
-                if (sender instanceof Player player) {
-                    if (!sender.hasPermission("usword.sword"))
-                        sender.sendMessage(ChatColor.RED + "You don't have permission to use this plugin");
-                    else {
-                        final ItemStack sword = getUpgradeableSword();
-                        if (player.getInventory().firstEmpty() == -1) {
-                            Location loc = player.getLocation();
-                            World world = player.getWorld();
-
-                            world.dropItem(loc, sword);
-                            player.sendMessage(ChatColor.AQUA + "Dropped the sword near you");
-
-                            return true;
-                        }
-
-                        player.getInventory().addItem(sword);
-                        player.sendMessage(ChatColor.AQUA + "Check the sword in your Inventory");
-                    }
-                }
-            }
-            default:
-                sender.sendMessage(ChatColor.RED + "No SubCommand was found : " + args[0]);
+        if (args[0].equals("reload")) {
+            if (!sender.hasPermission("usword.reload"))
+                sender.sendMessage(ChatColor.RED + "You don't have permission to reload this plugin");
+            else plugin.reloadConfig();
+            return true;
         }
 
+        sender.sendMessage(ChatColor.RED + "No SubCommand was found : " + args[0]);
         return true;
     }
 
-    public ItemStack getUpgradeableSword() {
+    public ItemStack getUpgradeableSword(String playerName) {
         ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
-        final ItemMeta meta = sword.getItemMeta();
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', plugin.getPluginConfig().swordName()));
-        meta.setUnbreakable(true);
-        sword.setItemMeta(meta);
 
+        ItemMeta meta = sword.getItemMeta();
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', plugin.getPluginConfig().swordName()));
+        meta.setLore(helper.replaceSwordLore(plugin.getPluginConfig().swordLore(), playerName, 0));
+        meta.setUnbreakable(true);
+
+        sword.setItemMeta(meta);
         return sword;
     }
 }

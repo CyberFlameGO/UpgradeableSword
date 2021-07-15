@@ -16,15 +16,17 @@ public class UpgradeableSword extends JavaPlugin {
         this.configManager = ConfigManager.create(this.getDataFolder().toPath(), "config.yml", Config.class);
 
         if (getPluginConfig().isEnabled()) {
+            PluginHelper helper = new PluginHelper();
+
             // Events
-            this.getServer().getPluginManager().registerEvents(new PluginEvent(this), this);
+            this.getServer().getPluginManager().registerEvents(new PluginEvent(this, helper), this);
 
             // Enchantments
             enchants = new PluginEnchants(this);
             enchants.register();
 
             // Commands
-            this.getServer().getPluginCommand("usword").setExecutor(new USwordCommand(this));
+            this.getServer().getPluginCommand("usword").setExecutor(new USwordCommand(this, helper));
 
             getLogger().info("Upgradeable Swords Started");
         }
