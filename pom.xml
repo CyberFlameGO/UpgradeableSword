@@ -6,13 +6,24 @@
 
     <groupId>gg.solarmc</groupId>
     <artifactId>UpgradeableSword</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
         <solarapi.version>1.1.7</solarapi.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>solar-repo</id>
+            <url>https://mvn-repo.solarmc.gg/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>solar-repo</id>
+            <url>https://mvn-repo.solarmc.gg/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencies>
         <!-- https://github.com/SolarMC-Dev/SolarPaper-API/blob/master/pom.xml -->
