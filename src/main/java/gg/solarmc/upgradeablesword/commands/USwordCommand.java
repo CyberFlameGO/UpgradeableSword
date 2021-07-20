@@ -62,7 +62,7 @@ public class USwordCommand implements CommandExecutor {
 
         ItemMeta meta = sword.getItemMeta();
         // TODO: Translate color codes
-        meta.displayName(Component.text(plugin.getPluginConfig().swordName()));
+        meta.displayName(helper.translateColorCode(plugin.getPluginConfig().swordName()));
         meta.lore(helper.replaceSwordLore(plugin.getPluginConfig().swordLore(), playerName, 0));
         meta.setUnbreakable(true);
 

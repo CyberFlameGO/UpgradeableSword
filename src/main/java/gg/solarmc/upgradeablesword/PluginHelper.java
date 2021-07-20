@@ -9,8 +9,7 @@ import java.util.List;
 public class PluginHelper {
     public List<Component> replaceSwordLore(List<String> lore, Component playerName, double xp) {
         return lore.stream()
-                // TODO: Get Name of the player with the color codes ...
-                .map(it -> translateColorCode(it.replace("{playerName}", playerName.examinableName())
+                .map(it -> translateColorCode(it.replace("{playerName}", stripColorCode(playerName))
                         .replace("{xp}", String.valueOf(xp)))
                 )
                 .toList();
