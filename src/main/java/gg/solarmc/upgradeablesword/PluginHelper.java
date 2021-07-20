@@ -1,13 +1,27 @@
 package gg.solarmc.upgradeablesword;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
+
 import java.util.List;
 
 public class PluginHelper {
-    public List<String> replaceSwordLore(List<String> lore, String playerName, double xp) {
+    public List<Component> replaceSwordLore(List<String> lore, Component playerName, double xp) {
         return lore.stream()
-                .map(it -> it.replace("{playerName}", playerName)
+                // TODO: Get Name of the player with the color codes ...
+                .map(it -> translateColorCode(it.replace("{playerName}", playerName.examinableName())
                         .replace("{xp}", String.valueOf(xp)))
+                )
                 .toList();
+    }
+
+    public Component translateColorCode(String s) {
+        return LegacyComponentSerializer.legacy('&').deserialize(s);
+    }
+
+    public String stripColorCode(Component c) {
+        return PlainComponentSerializer.plain().serialize(c);
     }
 
     // Only till 5 cause max enchant used in this plugin is 5 (Sharpness)

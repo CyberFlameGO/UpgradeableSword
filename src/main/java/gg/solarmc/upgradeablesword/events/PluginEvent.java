@@ -6,7 +6,11 @@ import gg.solarmc.upgradeablesword.UpgradeableSword;
 import gg.solarmc.upgradeablesword.config.Config;
 import gg.solarmc.upgradeablesword.config.LevelConfig;
 import gg.solarmc.upgradeablesword.enchantments.PluginEnchants;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
@@ -16,6 +20,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,11 +33,13 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
     private final UpgradeableSword plugin;
     private final PluginHelper helper;
     private final NamespacedKey xpKey;
+    private final PluginEnchants enchants;
 
-    public PluginEvent(UpgradeableSword plugin, PluginHelper helper) {
+    public PluginEvent(UpgradeableSword plugin, PluginHelper helper, PluginEnchants enchants) {
         xpKey = new NamespacedKey(plugin, "solar_xp");
         this.plugin = plugin;
         this.helper = helper;
+        this.enchants = enchants;
         playerData = new HashMap<>();
     }
 
@@ -43,18 +51,17 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
             ItemMeta meta = item.getItemMeta();
             Config config = plugin.getPluginConfig();
 
-            if (!(ChatColor.stripColor(meta.getDisplayName())).equals(config.swordName().replaceAll("&\\w", "")))
+            if (!(helper.stripColorCode(meta.displayName())).equals(config.swordName().replaceAll("&\\w", "")))
                 return;
 
-            List<String> lore = meta.getLore();
-            final List<String> swordLore = helper.replaceSwordLore(config.swordLore(), damager.getDisplayName(), getSwordXP(item) + 1);
+            List<Component> lore = meta.lore();
+            List<Component> swordLore = helper.replaceSwordLore(config.swordLore(), damager.displayName(), getSwordXP(item) + 1);
 
-            for (int i = 0; i < swordLore.size(); i++) {
+            for (int i = 0; i < swordLore.size(); i++)
                 lore.set(i, swordLore.get(i));
-            }
 
             addSwordXP((Player) event.getDamager(), item);
-            onLifeStealUsed(damager, damagedPlayer, item.getEnchantmentLevel(PluginEnchants.LIFE_STEAL));
+            onLifeStealUsed(damager, damagedPlayer, enchants.getEnchantmentLevel(item, PluginEnchants.LIFE_STEAL));
         }
     }
 
@@ -72,13 +79,15 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
     public void onLifeStealEnchantmentAdd(ItemStack sword, int amplifier) {
         if (amplifier == 0) return;
         final ItemMeta meta = sword.getItemMeta();
-        List<String> lore = meta.getLore();
+        List<Component> lore = meta.lore();
 
         // Get the second last Lore , cause last is `Unbreakable`
         if (sword.containsEnchantment(PluginEnchants.LIFE_STEAL)) lore.remove(lore.size() - 2);
-        lore.add(lore.size() - 2, "Life Steal " + helper.intToRoman(amplifier));
 
-        meta.setLore(lore);
+        // lore wouldn't be null :D
+        lore.add(lore.size() - 2, Component.text("Life Steal " + helper.intToRoman(amplifier)));
+
+        meta.lore(lore);
         sword.setItemMeta(meta);
     }
 
@@ -100,11 +109,14 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
         if (lastDamagedPlayerHits >= plugin.getPluginConfig().maxHitsAlert() && lastDamagedPlayerHits % 10 == 0) {
             damager.getServer().getOnlinePlayers()
                     .stream().filter(it -> it.hasPermission("usword.notifyBoosting"))
-                    .forEach(it -> it.sendMessage(String.format(
-                            ChatColor.BOLD + "" + ChatColor.GOLD + "!!! %s could be boosting (Hits to same Player : %s) !!!",
-                            damager.getName(),
-                            lastDamagedPlayerHits
-                    )));
+                    .forEach(it -> {
+                        TextComponent msg = Component.text("(")
+                                .append(Component.text("!!").style(Style.style(NamedTextColor.RED, TextDecoration.BOLD)))
+                                .append(Component.text(
+                                        String.format(") %s could be boosting (Hits to same Player : %s)",
+                                                damager.getName(), lastDamagedPlayerHits)));
+                        it.sendMessage(msg);
+                    });
         }
 
         if (damagerData.hits() == 4) {
@@ -121,7 +133,7 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
     private void checkAndAddEnchantment(Player player, ItemStack item, Enchantment enchantment, int xp, List<Integer> levels) {
         if (levels.contains(xp)) {
             int amplifier = levels.indexOf(xp);
-            item.addEnchantment(enchantment, amplifier);
+            enchants.addEnchantment(item, enchantment, amplifier);
 
             player.sendMessage(plugin.getPluginConfig().levelUpMessage()
                     .replace("{enchantment}", enchantment.getName())
@@ -135,38 +147,25 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
      * @param item the diamond sword.
      * @return the xp of the sword
      */
+    @SuppressWarnings("ConstantConditions")
     private double getSwordXP(ItemStack item) {
-        /*
         PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
 
         if (!dataContainer.has(xpKey, PersistentDataType.DOUBLE)) {
-            dataContainer.set(xpKey, PersistentDataType.DOUBLE, 0);
+            dataContainer.set(xpKey, PersistentDataType.DOUBLE, 0.0);
             return 0;
         }
 
+        // Will not produce npe cause we have checked if it has the xpKey :D
         return dataContainer.get(xpKey, PersistentDataType.DOUBLE);
-        */
-
-        List<String> lore = item.getLore();
-        if (!lore.get(0).startsWith("xp")) {
-            lore.add(0, "xp: 0.0");
-            item.setLore(lore);
-            return 0;
-        }
-
-        return Double.parseDouble(lore.get(0).split(":")[1].trim());
     }
 
     private void addSwordXP(Player player, ItemStack item) {
         double xp = plugin.getPluginConfig().xpRate();
         if (xp < 0) xp = 1.0 / xp;
 
-        // item.getPersistentDataContainer().set(new NamespacedKey(plugin, "solar_xp"), PersistentDataType.DOUBLE, getSwordXP(item) + xp);
-        List<String> lore = item.getLore();
-
-        lore.set(0, "xp: " + getSwordXP(item) + xp);
-        item.setLore(lore);
-
+        item.getItemMeta().getPersistentDataContainer()
+                .set(xpKey, PersistentDataType.DOUBLE, getSwordXP(item) + xp);
         onSwordXpIncrease(player, item);
     }
 }

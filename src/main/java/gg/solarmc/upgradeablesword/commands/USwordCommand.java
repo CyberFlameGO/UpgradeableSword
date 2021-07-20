@@ -3,6 +3,7 @@ package gg.solarmc.upgradeablesword.commands;
 import gg.solarmc.upgradeablesword.PluginHelper;
 import gg.solarmc.upgradeablesword.UpgradeableSword;
 import gg.solarmc.upgradeablesword.config.Config;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -35,7 +36,8 @@ public class USwordCommand implements CommandExecutor {
                         player.sendMessage(ChatColor.RED + "Your Inventory is Full!!");
                         return true;
                     }
-                    ItemStack sword = getUpgradeableSword(player.getDisplayName());
+
+                    ItemStack sword = getUpgradeableSword(player.displayName());
 
                     player.getInventory().addItem(sword);
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&', config.swordGaveMessage()));
@@ -55,12 +57,13 @@ public class USwordCommand implements CommandExecutor {
         return true;
     }
 
-    public ItemStack getUpgradeableSword(String playerName) {
+    public ItemStack getUpgradeableSword(Component playerName) {
         ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
 
         ItemMeta meta = sword.getItemMeta();
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', plugin.getPluginConfig().swordName()));
-        meta.setLore(helper.replaceSwordLore(plugin.getPluginConfig().swordLore(), playerName, 0));
+        // TODO: Translate color codes
+        meta.displayName(Component.text(plugin.getPluginConfig().swordName()));
+        meta.lore(helper.replaceSwordLore(plugin.getPluginConfig().swordLore(), playerName, 0));
         meta.setUnbreakable(true);
 
         sword.setItemMeta(meta);

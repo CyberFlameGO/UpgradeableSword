@@ -9,21 +9,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class UpgradeableSword extends JavaPlugin {
     private ConfigManager<Config> configManager;
-    private PluginEnchants enchants;
 
     @Override
     public void onEnable() {
         this.configManager = ConfigManager.create(this.getDataFolder().toPath(), "config.yml", Config.class);
+        reloadConfig();
 
         if (getPluginConfig().isEnabled()) {
             PluginHelper helper = new PluginHelper();
 
-            // Events
-            this.getServer().getPluginManager().registerEvents(new PluginEvent(this, helper), this);
-
             // Enchantments
-            enchants = new PluginEnchants(this);
-            enchants.register();
+            PluginEnchants enchants = new PluginEnchants(this);
+
+            // Events
+            this.getServer().getPluginManager().registerEvents(new PluginEvent(this, helper, enchants), this);
 
             // Commands
             this.getServer().getPluginCommand("usword").setExecutor(new USwordCommand(this, helper));
@@ -34,7 +33,6 @@ public class UpgradeableSword extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        enchants.unregister();
     }
 
     public Config getPluginConfig() {
