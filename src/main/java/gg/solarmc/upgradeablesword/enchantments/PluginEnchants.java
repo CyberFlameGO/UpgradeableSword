@@ -12,7 +12,7 @@ public class PluginEnchants {
     public static final Enchantment LIFE_STEAL = new LifeStealEnchantment();
 
     public PluginEnchants(UpgradeableSword plugin) {
-        this.lifeStealKey = new NamespacedKey(plugin, "enchantment:" + LIFE_STEAL.getName());
+        this.lifeStealKey = new NamespacedKey(plugin, "enchantment." + LIFE_STEAL.getName().toLowerCase().replace(' ', '_'));
     }
 
     public void addEnchantment(ItemStack item, Enchantment enchantment, int level) {
