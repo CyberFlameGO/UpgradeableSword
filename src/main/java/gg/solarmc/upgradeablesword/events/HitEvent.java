@@ -71,7 +71,7 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
         final ItemMeta meta = sword.getItemMeta();
         List<Component> lore = new LinkedList<>(meta.lore());
 
-        if (enchants.containsEnchantment(sword, PluginEnchants.LIFE_STEAL)) lore.remove(0);
+        if (enchants.containsEnchantment(sword, PluginEnchants.LIFE_STEAL) && lore.size() != 2) lore.remove(0);
         lore.add(0, Component.text(ChatColor.GRAY + "Life Steal " + helper.intToRoman(amplifier)));
 
         meta.lore(lore);

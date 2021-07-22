@@ -70,6 +70,7 @@ public class USwordCommand implements CommandExecutor {
 
             meta.lore(lore);
             item.setItemMeta(meta);
+            return true;
         }
 
         sender.sendMessage(ChatColor.RED + "No SubCommand was found : " + args[0]);
