@@ -63,7 +63,7 @@ public class USwordCommand implements CommandExecutor {
             final ItemMeta meta = item.getItemMeta();
             List<Component> lore = new LinkedList<>(meta.lore());
 
-            List<Component> swordLore = helper.replaceSwordLore(config.swordLore(), player.displayName(), helper.getSwordXP(item) + 1);
+            List<Component> swordLore = helper.replaceSwordLore(config.swordLore(), player.displayName(), helper.getSwordXP(item));
 
             for (int i = 1; i <= swordLore.size(); i++)
                 lore.set(i, swordLore.get(i - 1));
@@ -81,7 +81,6 @@ public class USwordCommand implements CommandExecutor {
         ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
 
         ItemMeta meta = sword.getItemMeta();
-        // TODO: Translate color codes
         meta.displayName(helper.translateColorCode(plugin.getPluginConfig().swordName()));
         meta.lore(helper.replaceSwordLore(plugin.getPluginConfig().swordLore(), playerName, 0));
         meta.setUnbreakable(true);
