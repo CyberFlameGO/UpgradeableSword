@@ -4,6 +4,7 @@ import gg.solarmc.upgradeablesword.UpgradeableSword;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -16,12 +17,21 @@ public class PluginEnchants {
     }
 
     public void addEnchantment(ItemStack item, Enchantment enchantment, int level) {
+        if (level == 0) return;
         if (enchantment == LIFE_STEAL) {
-            item.getItemMeta().getPersistentDataContainer().set(lifeStealKey, PersistentDataType.INTEGER, level);
+            ItemMeta meta = item.getItemMeta();
+            meta.getPersistentDataContainer().set(lifeStealKey, PersistentDataType.INTEGER, level);
+            item.setItemMeta(meta);
             return;
         }
 
         item.addEnchantment(enchantment, level);
+    }
+
+    public boolean containsEnchantment(ItemStack item, Enchantment enchantment) {
+        if (enchantment == LIFE_STEAL)
+            return item.getItemMeta().getPersistentDataContainer().has(lifeStealKey, PersistentDataType.INTEGER);
+        return item.containsEnchantment(enchantment);
     }
 
     @SuppressWarnings("ConstantConditions")

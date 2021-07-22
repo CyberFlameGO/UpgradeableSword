@@ -11,7 +11,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.NamespacedKey;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -20,23 +21,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-public class PluginEvent implements Listener, UpgradeableSwordEvent {
+public class HitEvent implements Listener, UpgradeableSwordEvent {
     private final Map<UUID, PlayerData> playerData;
     private final UpgradeableSword plugin;
     private final PluginHelper helper;
-    private final NamespacedKey xpKey;
     private final PluginEnchants enchants;
 
-    public PluginEvent(UpgradeableSword plugin, PluginHelper helper, PluginEnchants enchants) {
-        xpKey = new NamespacedKey(plugin, "solar_xp");
+    public HitEvent(UpgradeableSword plugin, PluginHelper helper, PluginEnchants enchants) {
         this.plugin = plugin;
         this.helper = helper;
         this.enchants = enchants;
@@ -47,20 +41,16 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
     public void onPlayerHitPlayer(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player damagedPlayer && event.getDamager() instanceof Player damager) {
             ItemStack item = damager.getInventory().getItemInMainHand();
-            if (item == null) return;
+            if (item == null || item.getType() == Material.AIR) return;
             ItemMeta meta = item.getItemMeta();
             Config config = plugin.getPluginConfig();
 
             if (!(helper.stripColorCode(meta.displayName())).equals(config.swordName().replaceAll("&\\w", "")))
                 return;
 
-            List<Component> lore = meta.lore();
-            List<Component> swordLore = helper.replaceSwordLore(config.swordLore(), damager.displayName(), getSwordXP(item) + 1);
-
-            for (int i = 0; i < swordLore.size(); i++)
-                lore.set(i, swordLore.get(i));
-
-            addSwordXP((Player) event.getDamager(), item);
+            Player player = (Player) event.getDamager();
+            helper.addSwordXP(item);
+            onSwordXpIncrease(player, item);
             onLifeStealUsed(damager, damagedPlayer, enchants.getEnchantmentLevel(item, PluginEnchants.LIFE_STEAL));
         }
     }
@@ -68,7 +58,7 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
     @Override
     public void onSwordXpIncrease(Player player, ItemStack item) {
         LevelConfig config = plugin.getPluginConfig().getLevelConfig();
-        int xp = (int) getSwordXP(item);
+        int xp = (int) helper.getSwordXP(item).doubleValue();
 
         checkAndAddEnchantment(player, item, Enchantment.DAMAGE_ALL, xp, config.sharpness());
         checkAndAddEnchantment(player, item, Enchantment.FIRE_ASPECT, xp, config.fireAspect());
@@ -79,13 +69,10 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
     public void onLifeStealEnchantmentAdd(ItemStack sword, int amplifier) {
         if (amplifier == 0) return;
         final ItemMeta meta = sword.getItemMeta();
-        List<Component> lore = meta.lore();
+        List<Component> lore = new LinkedList<>(meta.lore());
 
-        // Get the second last Lore , cause last is `Unbreakable`
-        if (sword.containsEnchantment(PluginEnchants.LIFE_STEAL)) lore.remove(lore.size() - 2);
-
-        // lore wouldn't be null :D
-        lore.add(lore.size() - 2, Component.text("Life Steal " + helper.intToRoman(amplifier)));
+        if (enchants.containsEnchantment(sword, PluginEnchants.LIFE_STEAL)) lore.remove(0);
+        lore.add(0, Component.text(ChatColor.GRAY + "Life Steal " + helper.intToRoman(amplifier)));
 
         meta.lore(lore);
         sword.setItemMeta(meta);
@@ -136,36 +123,17 @@ public class PluginEvent implements Listener, UpgradeableSwordEvent {
             enchants.addEnchantment(item, enchantment, amplifier);
 
             player.sendMessage(plugin.getPluginConfig().levelUpMessage()
-                    .replace("{enchantment}", enchantment.getName())
+                    .replace("{enchantment}", getName(enchantment))
                     .replace("{level}", helper.intToRoman(amplifier)));
 
             if (enchantment == PluginEnchants.LIFE_STEAL) onLifeStealEnchantmentAdd(item, amplifier);
         }
     }
 
-    /**
-     * @param item the diamond sword.
-     * @return the xp of the sword
-     */
-    @SuppressWarnings("ConstantConditions")
-    private double getSwordXP(ItemStack item) {
-        PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
-
-        if (!dataContainer.has(xpKey, PersistentDataType.DOUBLE)) {
-            dataContainer.set(xpKey, PersistentDataType.DOUBLE, 0.0);
-            return 0;
-        }
-
-        // Will not produce npe cause we have checked if it has the xpKey :D
-        return dataContainer.get(xpKey, PersistentDataType.DOUBLE);
-    }
-
-    private void addSwordXP(Player player, ItemStack item) {
-        double xp = plugin.getPluginConfig().xpRate();
-        if (xp < 0) xp = 1.0 / xp;
-
-        item.getItemMeta().getPersistentDataContainer()
-                .set(xpKey, PersistentDataType.DOUBLE, getSwordXP(item) + xp);
-        onSwordXpIncrease(player, item);
+    private String getName(Enchantment enchantment) {
+        if (enchantment.equals(Enchantment.DAMAGE_ALL)) return "Sharpness";
+        else if (enchantment.equals(Enchantment.FIRE_ASPECT)) return "Fire Aspect";
+        else if (enchantment.equals(PluginEnchants.LIFE_STEAL)) return "Life Steal";
+        else return enchantment.getName();
     }
 }

@@ -4,7 +4,7 @@ import gg.solarmc.upgradeablesword.commands.USwordCommand;
 import gg.solarmc.upgradeablesword.config.Config;
 import gg.solarmc.upgradeablesword.config.ConfigManager;
 import gg.solarmc.upgradeablesword.enchantments.PluginEnchants;
-import gg.solarmc.upgradeablesword.events.PluginEvent;
+import gg.solarmc.upgradeablesword.events.HitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class UpgradeableSword extends JavaPlugin {
@@ -16,13 +16,13 @@ public class UpgradeableSword extends JavaPlugin {
         reloadConfig();
 
         if (getPluginConfig().isEnabled()) {
-            PluginHelper helper = new PluginHelper();
+            PluginHelper helper = new PluginHelper(this);
 
             // Enchantments
             PluginEnchants enchants = new PluginEnchants(this);
 
             // Events
-            this.getServer().getPluginManager().registerEvents(new PluginEvent(this, helper, enchants), this);
+            this.getServer().getPluginManager().registerEvents(new HitEvent(this, helper, enchants), this);
 
             // Commands
             this.getServer().getPluginCommand("usword").setExecutor(new USwordCommand(this, helper));
