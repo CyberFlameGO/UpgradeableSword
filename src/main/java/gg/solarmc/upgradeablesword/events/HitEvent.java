@@ -21,6 +21,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -29,6 +31,7 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
     private final UpgradeableSword plugin;
     private final PluginHelper helper;
     private final PluginEnchants enchants;
+    private final Logger LOGGER = LoggerFactory.getLogger(HitEvent.class);
 
     public HitEvent(UpgradeableSword plugin, PluginHelper helper, PluginEnchants enchants) {
         this.plugin = plugin;
@@ -44,6 +47,8 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
             if (item == null || item.getType() == Material.AIR) return;
             ItemMeta meta = item.getItemMeta();
             Config config = plugin.getPluginConfig();
+
+            if (!meta.hasDisplayName()) return;
 
             if (!(helper.stripColorCode(meta.displayName())).equals(config.swordName().replaceAll("&\\w", "")))
                 return;
@@ -93,7 +98,9 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
             return;
         }
 
-        if (lastDamagedPlayerHits >= plugin.getPluginConfig().maxHitsAlert() && lastDamagedPlayerHits % 10 == 0) {
+        if (lastDamagedPlayerHits > plugin.getPluginConfig().maxHitsAlert()) {
+            LOGGER.warn("BOOSTING DETECTED :D :D :D :D" + damager.getName());
+            playerData.put(damagerId, damagerData.withLastDamagedPlayerHits(1));
             damager.getServer().getOnlinePlayers()
                     .stream().filter(it -> it.hasPermission("usword.notifyBoosting"))
                     .forEach(it -> {
