@@ -55,12 +55,17 @@ public class USwordCommand implements CommandExecutor {
         }
 
         switch (args[0]) {
+            case "help" -> {
+
+            }
+            // Reload Command
             case "reload" -> {
                 if (!sender.hasPermission("usword.reload"))
                     sender.sendMessage(ChatColor.RED + "You don't have permission to reload this plugin");
                 else plugin.reloadConfig();
                 return true;
             }
+            // Sync COmmand
             case "sync" -> {
                 Player player = (Player) sender;
                 final ItemStack item = player.getInventory().getItemInMainHand();
@@ -85,6 +90,7 @@ public class USwordCommand implements CommandExecutor {
                 item.setItemMeta(meta);
                 return true;
             }
+            // Level Command
             case "level" -> {
                 Player player = (Player) sender;
                 final ItemStack item = player.getInventory().getItemInMainHand();
@@ -110,6 +116,8 @@ public class USwordCommand implements CommandExecutor {
                     sender.sendMessage("XP of your sword : " + meta.getPersistentDataContainer().get(xp, PersistentDataType.DOUBLE));
                 return true;
             }
+
+            // TODO: Make this organised and make a help command
         }
 
         sender.sendMessage(ChatColor.RED + "No SubCommand was found : " + args[0]);

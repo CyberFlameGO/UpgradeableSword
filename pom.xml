@@ -4,7 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>gg.solarmc</groupId>
+    <parent>
+        <groupId>gg.solarmc</groupId>
+        <artifactId>solar-parent</artifactId>
+        <version>0.6.2</version>
+    </parent>
+
     <artifactId>UpgradeableSword</artifactId>
     <version>1.2-SNAPSHOT</version>
 
@@ -38,6 +43,14 @@
             <artifactId>dazzleconf-ext-snakeyaml</artifactId>
             <version>1.2.0-M2</version>
         </dependency>
+
+        <!-- https://worldguard.enginehub.org/en/latest/developer/dependency/ -->
+        <dependency>
+            <groupId>gg.solarmc.worldguard</groupId>
+            <artifactId>worldguard-legacy</artifactId>
+            <version>6.2.2</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -49,6 +62,11 @@
         <repository>
             <id>solar-snapshots</id>
             <url>https://mvn-repo.solarmc.gg/snapshots</url>
+        </repository>
+
+        <repository>
+            <id>sk89q-repo</id>
+            <url>https://maven.enginehub.org/repo</url>
         </repository>
     </repositories>
 

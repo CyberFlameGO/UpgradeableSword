@@ -6,3 +6,4 @@ commands:
   usword:
     description: "The only command of USword Plugin"
     usage: /<command>
+depend: [ WorldGuard ]

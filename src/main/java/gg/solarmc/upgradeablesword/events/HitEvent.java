@@ -1,5 +1,10 @@
 package gg.solarmc.upgradeablesword.events;
 
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.domains.Association;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import gg.solarmc.upgradeablesword.PlayerData;
 import gg.solarmc.upgradeablesword.PluginHelper;
 import gg.solarmc.upgradeablesword.UpgradeableSword;
@@ -15,6 +20,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,8 +48,23 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
 
     @EventHandler
     public void onPlayerHitPlayer(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof Player damagedPlayer && event.getDamager() instanceof Player damager) {
-            ItemStack item = damager.getInventory().getItemInMainHand();
+        Entity damager = event.getDamager();
+        final Entity damaged = event.getEntity();
+
+        WorldGuardPlugin wgManager = plugin.getWorldGuardManager();
+        ApplicableRegionSet damagerRegions = wgManager.getRegionManager(damager.getWorld()).getApplicableRegions(damager.getLocation());
+        ApplicableRegionSet damagedRegions = wgManager.getRegionManager(damaged.getWorld()).getApplicableRegions(damaged.getLocation());
+
+        if (damagerRegions.queryState(r -> Association.NON_MEMBER, DefaultFlag.PVP) == StateFlag.State.DENY
+                || damagedRegions.queryState(r -> Association.NON_MEMBER, DefaultFlag.PVP) == StateFlag.State.DENY) {
+            LOGGER.info("Hit was cancelled :)  damager : " + damager.getName() + " damaged" + damaged.getName());
+            return;
+        }
+
+        if (damaged instanceof Player damagedPlayer && damager instanceof Player player) {
+            player.sendMessage(Arrays.stream(EntityDamageByEntityEvent.getHandlerList().getRegisteredListeners()).map(it -> it.getPlugin().getName()).toArray(String[]::new));
+
+            ItemStack item = player.getInventory().getItemInMainHand();
             if (item == null || item.getType() == Material.AIR) return;
             ItemMeta meta = item.getItemMeta();
             Config config = plugin.getPluginConfig();
@@ -53,10 +74,9 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
             if (!(helper.stripColorCode(meta.displayName())).equals(config.swordName().replaceAll("&\\w", "")))
                 return;
 
-            Player player = (Player) event.getDamager();
             helper.addSwordXP(item);
             onSwordXpIncrease(player, item);
-            onLifeStealUsed(damager, damagedPlayer, enchants.getEnchantmentLevel(item, PluginEnchants.LIFE_STEAL));
+            onLifeStealUsed(player, damagedPlayer, enchants.getEnchantmentLevel(item, PluginEnchants.LIFE_STEAL));
         }
     }
 

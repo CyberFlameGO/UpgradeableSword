@@ -1,5 +1,6 @@
 package gg.solarmc.upgradeablesword;
 
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import gg.solarmc.upgradeablesword.commands.USwordCommand;
 import gg.solarmc.upgradeablesword.config.Config;
 import gg.solarmc.upgradeablesword.config.ConfigManager;
@@ -9,9 +10,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class UpgradeableSword extends JavaPlugin {
     private ConfigManager<Config> configManager;
+    private WorldGuardPlugin worldGuard;
 
     @Override
     public void onEnable() {
+        worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
         this.configManager = ConfigManager.create(this.getDataFolder().toPath(), "config.yml", Config.class);
         reloadConfig();
 
@@ -37,6 +40,10 @@ public class UpgradeableSword extends JavaPlugin {
 
     public Config getPluginConfig() {
         return configManager.getConfigData();
+    }
+
+    public WorldGuardPlugin getWorldGuardManager() {
+        return worldGuard;
     }
 
     @Override
