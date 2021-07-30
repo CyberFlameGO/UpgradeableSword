@@ -5,6 +5,7 @@ import gg.solarmc.upgradeablesword.UpgradeableSword;
 import gg.solarmc.upgradeablesword.config.Config;
 import gg.solarmc.upgradeablesword.enchantments.PluginEnchants;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -37,26 +38,31 @@ public class USwordCommand implements CommandExecutor {
 
         if (args.length == 0) {
             if (sender instanceof Player player) {
-                /*if (!sender.hasPermission("usword.command"))
+                if (!sender.hasPermission("usword.command"))
                     sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
-                else {*/
-                if (player.getInventory().firstEmpty() == -1) {
-                    player.sendMessage(ChatColor.RED + "Your Inventory is Full!!");
-                    return true;
+                else {
+                    if (player.getInventory().firstEmpty() == -1) {
+                        player.sendMessage(ChatColor.RED + "Your Inventory is Full!!");
+                        return true;
+                    }
+
+                    ItemStack sword = getUpgradeableSword(player.displayName());
+
+                    player.getInventory().addItem(sword);
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', config.swordGaveMessage()));
                 }
-
-                ItemStack sword = getUpgradeableSword(player.displayName());
-
-                player.getInventory().addItem(sword);
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&', config.swordGaveMessage()));
-                //}
             } else sender.sendMessage("Only Players can use this command.");
             return true;
         }
 
         switch (args[0]) {
             case "help" -> {
-
+                sender.sendMessage(Component.text("Upgradeable Swords Commands : ", NamedTextColor.YELLOW)
+                        .append(Component.newline())
+                        .append(Component.text("sync - Updates the lore of the sword"))
+                        .append(Component.newline())
+                        .append(Component.text("level - Shows the level of your sword")));
+                return true;
             }
             // Reload Command
             case "reload" -> {
@@ -65,7 +71,7 @@ public class USwordCommand implements CommandExecutor {
                 else plugin.reloadConfig();
                 return true;
             }
-            // Sync COmmand
+            // Sync Command
             case "sync" -> {
                 Player player = (Player) sender;
                 final ItemStack item = player.getInventory().getItemInMainHand();
@@ -116,8 +122,6 @@ public class USwordCommand implements CommandExecutor {
                     sender.sendMessage("XP of your sword : " + meta.getPersistentDataContainer().get(xp, PersistentDataType.DOUBLE));
                 return true;
             }
-
-            // TODO: Make this organised and make a help command
         }
 
         sender.sendMessage(ChatColor.RED + "No SubCommand was found : " + args[0]);

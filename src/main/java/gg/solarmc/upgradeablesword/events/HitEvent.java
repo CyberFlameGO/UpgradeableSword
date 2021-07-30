@@ -57,8 +57,6 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
                 return;
             }
 
-            damager.sendMessage(Arrays.stream(EntityDamageByEntityEvent.getHandlerList().getRegisteredListeners()).map(it -> it.getPlugin().getName()).toArray(String[]::new));
-
             ItemStack item = damager.getInventory().getItemInMainHand();
             if (item == null || item.getType() == Material.AIR) return;
             ItemMeta meta = item.getItemMeta();
