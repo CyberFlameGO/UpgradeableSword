@@ -142,9 +142,9 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
             int amplifier = levels.indexOf(xp);
             enchants.addEnchantment(item, enchantment, amplifier);
 
-            player.sendMessage(plugin.getPluginConfig().levelUpMessage()
+            player.sendMessage(helper.translateColorCode(plugin.getPluginConfig().levelUpMessage()
                     .replace("{enchantment}", getName(enchantment))
-                    .replace("{level}", helper.intToRoman(amplifier)));
+                    .replace("{level}", helper.intToRoman(amplifier))));
 
             if (enchantment == PluginEnchants.LIFE_STEAL) onLifeStealEnchantmentAdd(item, amplifier);
         }
