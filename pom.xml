@@ -10,6 +10,7 @@
         <version>0.6.2</version>
     </parent>
 
+    <groupId>gg.solarmc.usword</groupId>
     <artifactId>UpgradeableSword</artifactId>
     <version>1.2-SNAPSHOT</version>
 
