@@ -76,6 +76,6 @@ public class USwordCommand implements CommandExecutor {
         int sec = (int) (milliseconds / 1000) % 60;
         int min = (int) ((milliseconds / (1000 * 60)) % 60);
         int hour = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
-        return String.format("%dH %dM %dS", sec, min, hour);
+        return String.format("%dH %dM %dS", hour, min, sec);
     }
 }
