@@ -20,17 +20,6 @@
         <solarapi.version>1.2.0-SNAPSHOT</solarapi.version>
     </properties>
 
-    <distributionManagement>
-        <repository>
-            <id>solar-repo</id>
-            <url>https://mvn-repo.solarmc.gg/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>solar-snapshot</id>
-            <url>https://mvn-repo.solarmc.gg/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <dependencies>
         <!-- https://github.com/SolarMC-Dev/SolarPaper-API/blob/master/pom.xml -->
         <dependency>
