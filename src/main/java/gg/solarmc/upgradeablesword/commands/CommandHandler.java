@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommandHandler {
@@ -63,7 +64,7 @@ public class CommandHandler {
         ItemStack item = player.getInventory().getItemInMainHand();
         ItemMeta meta = item.getItemMeta();
 
-        List<Component> lore = List.copyOf(meta.lore());
+        List<Component> lore = new ArrayList<>(meta.lore());
         List<Component> swordLore = helper.replaceSwordLore(plugin.getPluginConfig().swordLore(), player.displayName(), helper.getSwordXP(item));
         boolean containsLifeSteal = enchants.containsEnchantment(item, PluginEnchants.LIFE_STEAL);
 
