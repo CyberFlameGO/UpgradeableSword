@@ -132,8 +132,8 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
             double damagerHealth = Math.min(damager.getHealth() + lifeStealAmplifier, damager.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             damager.setHealth(damagerHealth);
 
-            double playerDamagedHealth = Math.max(0, playerDamaged.getHealth() - lifeStealAmplifier);
-            playerDamaged.setHealth(playerDamagedHealth);
+            // double playerDamagedHealth = Math.max(0, playerDamaged.getHealth() - lifeStealAmplifier);
+            // playerDamaged.setHealth(playerDamagedHealth);
         }
     }
 
