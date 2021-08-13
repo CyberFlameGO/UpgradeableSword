@@ -67,8 +67,8 @@ public interface Config {
     @SubSection LevelConfig getLevelConfig();
 
     @ConfKey("usword-cooldown")
-    @ConfComments("The cooldown of /usword command only in seconds")
-    @ConfDefault.DefaultLong(60 * 5L)
+    @ConfComments("The cooldown of /usword command only in seconds // just tell me for new cooldown... :p")
+    @ConfDefault.DefaultLong(60 * 60 * 24)
     long uSwordCoolDown();
 
 }
