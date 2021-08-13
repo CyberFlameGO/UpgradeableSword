@@ -38,9 +38,9 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
     private final PluginEnchants enchants;
     private final Logger LOGGER = LoggerFactory.getLogger(HitEvent.class);
 
-    public HitEvent(UpgradeableSword plugin, PluginHelper helper, PluginEnchants enchants) {
+    public HitEvent(UpgradeableSword plugin, PluginEnchants enchants) {
         this.plugin = plugin;
-        this.helper = helper;
+        this.helper = plugin.getHelper();
         this.enchants = enchants;
         playerData = new HashMap<>();
     }
@@ -83,11 +83,12 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
         checkAndAddEnchantment(player, item, PluginEnchants.LIFE_STEAL, xp, config.lifeSteal());
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onLifeStealEnchantmentAdd(ItemStack sword, int amplifier) {
         if (amplifier == 0) return;
         final ItemMeta meta = sword.getItemMeta();
-        List<Component> lore = new LinkedList<>(meta.lore());
+        List<Component> lore = List.copyOf(meta.lore());
 
         if (enchants.containsEnchantment(sword, PluginEnchants.LIFE_STEAL) && lore.size() != 2) lore.remove(0);
         lore.add(0, Component.text(ChatColor.GRAY + "Life Steal " + helper.intToRoman(amplifier)));
@@ -112,18 +113,16 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
         }
 
         if (lastDamagedPlayerHits > plugin.getPluginConfig().maxHitsAlert()) {
-            LOGGER.warn("BOOSTING DETECTED :D :D :D :D" + damager.getName());
+            TextComponent msg = Component.text("(")
+                    .append(Component.text("!!").style(Style.style(NamedTextColor.RED, TextDecoration.BOLD)))
+                    .append(Component.text(
+                            String.format(") %s could be boosting (Hits to same Player : %s)",
+                                    damager.getName(), lastDamagedPlayerHits)));
             playerData.put(damagerId, damagerData.withLastDamagedPlayerHits(1));
             damager.getServer().getOnlinePlayers()
                     .stream().filter(it -> it.hasPermission("usword.notifyBoosting"))
-                    .forEach(it -> {
-                        TextComponent msg = Component.text("(")
-                                .append(Component.text("!!").style(Style.style(NamedTextColor.RED, TextDecoration.BOLD)))
-                                .append(Component.text(
-                                        String.format(") %s could be boosting (Hits to same Player : %s)",
-                                                damager.getName(), lastDamagedPlayerHits)));
-                        it.sendMessage(msg);
-                    });
+                    .forEach(it -> it.sendMessage(msg));
+            LOGGER.warn("Notified Boosting (" + damager.getName() + "): ");
         }
 
         if (damagerData.hits() == 4) {

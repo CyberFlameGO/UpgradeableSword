@@ -11,6 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class UpgradeableSword extends JavaPlugin {
     private ConfigManager<Config> configManager;
     private WorldGuardPlugin worldGuard;
+    private PluginHelper helper;
 
     @Override
     public void onEnable() {
@@ -19,16 +20,16 @@ public class UpgradeableSword extends JavaPlugin {
         reloadConfig();
 
         if (getPluginConfig().isEnabled()) {
-            PluginHelper helper = new PluginHelper(this);
+            helper = new PluginHelper(this);
 
             // Enchantments
             PluginEnchants enchants = new PluginEnchants(this);
 
             // Events
-            this.getServer().getPluginManager().registerEvents(new HitEvent(this, helper, enchants), this);
+            this.getServer().getPluginManager().registerEvents(new HitEvent(this, enchants), this);
 
             // Commands
-            this.getServer().getPluginCommand("usword").setExecutor(new USwordCommand(this, helper, enchants));
+            this.getServer().getPluginCommand("usword").setExecutor(new USwordCommand(this, enchants));
 
             getLogger().info("Upgradeable Swords Started");
         }
@@ -44,6 +45,10 @@ public class UpgradeableSword extends JavaPlugin {
 
     public WorldGuardPlugin getWorldGuardManager() {
         return worldGuard;
+    }
+
+    public PluginHelper getHelper() {
+        return helper;
     }
 
     @Override

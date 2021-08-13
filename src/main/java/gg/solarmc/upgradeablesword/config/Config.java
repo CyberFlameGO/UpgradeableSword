@@ -8,10 +8,6 @@ import space.arim.dazzleconf.annote.SubSection;
 import java.util.List;
 
 public interface Config {
-    static @SubSection LevelConfig setDefaultLevelConfig(LevelConfig defaultGiftsSection) {
-        return defaultGiftsSection;
-    }
-
     @ConfKey("enabled")
     @ConfDefault.DefaultBoolean(true)
     boolean isEnabled();
@@ -62,7 +58,6 @@ public interface Config {
     String levelUpMessage();
 
     @ConfKey("levels")
-    @ConfDefault.DefaultObject("setDefaultLevelConfig")
     @ConfComments({
             "Levels of Enchantment",
             "Each index of these Integers represents the xp for a level of The Enchantment",
@@ -70,4 +65,10 @@ public interface Config {
             "    5000 xp is needed for fire aspect level 2"
     })
     @SubSection LevelConfig getLevelConfig();
+
+    @ConfKey("usword-cooldown")
+    @ConfComments("The cooldown of /usword command only in seconds")
+    @ConfDefault.DefaultLong(60 * 5L)
+    long uSwordCoolDown();
+
 }
