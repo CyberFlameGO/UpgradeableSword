@@ -5,6 +5,9 @@ import com.sk89q.worldguard.domains.Association;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import gg.solarmc.clans.SolarClans;
+import gg.solarmc.clans.helper.ClanHelper;
+import gg.solarmc.clans.helper.ClanRelation;
 import gg.solarmc.upgradeablesword.PlayerData;
 import gg.solarmc.upgradeablesword.PluginHelper;
 import gg.solarmc.upgradeablesword.UpgradeableSword;
@@ -55,6 +58,16 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
             if (damagerRegions.queryState(r -> Association.NON_MEMBER, DefaultFlag.PVP) == StateFlag.State.DENY
                     || damagedRegions.queryState(r -> Association.NON_MEMBER, DefaultFlag.PVP) == StateFlag.State.DENY) {
                 return;
+            }
+
+            SolarClans clan = plugin.getClansManager();
+            ClanHelper clanHelper = clan.getClanHelper();
+            ClanRelation relation = clanHelper.getRelation(damager, damaged);
+            if (relation == ClanRelation.MEMBER) {
+                if (clan.getClanPvpHelper().isPvpOn(clanHelper.getClan(damager))) return;
+            }
+            if (relation == ClanRelation.ALLY) {
+                if (clan.getAllyPvpHelper().isPvpOn(clanHelper.getClan(damager))) return;
             }
 
             ItemStack item = damager.getInventory().getItemInMainHand();
