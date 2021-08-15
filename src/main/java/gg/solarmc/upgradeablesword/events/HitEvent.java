@@ -67,7 +67,8 @@ public class HitEvent implements Listener, UpgradeableSwordEvent {
                 if (clan.getClanPvpHelper().isPvpOn(clanHelper.getClan(damager))) return;
             }
             if (relation == ClanRelation.ALLY) {
-                if (clan.getAllyPvpHelper().isPvpOn(clanHelper.getClan(damager))) return;
+                if (clan.getAllyPvpHelper().isPvpOn(clanHelper.getClan(damager))
+                        || clan.getAllyPvpHelper().isPvpOn(clanHelper.getClan(damaged))) return;
             }
 
             ItemStack item = damager.getInventory().getItemInMainHand();
